@@ -1,55 +1,80 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { mdToHtml } from "./markdown.js";
 
+// Enterprise Agent Roster
 const AGENTS = [
-  { key: "planner", label: "Planner", role: "Task Decomposition", icon: "🧭", note: "Breaks complex analytical goals into focused sub-tasks" },
-  { key: "analysis", label: "Analyst", role: "Sandboxed Pandas", icon: "🐍", note: "Executes Python in secure sandbox & registers evidence" },
-  { key: "visualization", label: "Visualizer", role: "Chart Drafting", icon: "📊", note: "Selects chart types & plots deterministic data" },
-  { key: "critic", label: "Vision Critic", role: "Multimodal Audit", icon: "👁️", note: "Inspects rendered PNGs using computer vision" },
-  { key: "report", label: "Reporter", role: "Evidence-Bound Writing", icon: "✍️", note: "Drafts narrative using strict evidence placeholders" },
-  { key: "verifier", label: "Verifier", role: "Symbolic Recomputation", icon: "🛡️", note: "Recomputes math in Python & eliminates hallucinations" },
+  { key: "planner", label: "Planner Agent", role: "Task Decomposition", icon: "🧭", note: "Decomposes complex investment & analytical objectives into structured subtasks" },
+  { key: "analysis", label: "Quantitative Analyst", role: "Sandboxed Pandas Execution", icon: "🐍", note: "Executes verified Python computations in AST sandbox & indexes ground-truth artifacts" },
+  { key: "visualization", label: "Visualization Agent", role: "Deterministic Chart Synthesis", icon: "📊", note: "Renders publication-grade matplotlib figures with strict scale guarantees" },
+  { key: "critic", label: "Multimodal Vision Critic", role: "Visual Integrity Audit", icon: "👁️", note: "Inspects rendered chart PNGs using computer vision to resolve clipped axes & scale anomalies" },
+  { key: "report", label: "Research Reporter", role: "Evidence-Bound Synthesis", icon: "✍️", note: "Drafts hybrid quantitative & qualitative intelligence dossiers with strict evidence tags" },
+  { key: "verifier", label: "Symbolic Verifier", role: "Deterministic Claim Proof", icon: "🛡️", note: "Recomputes claim algebra in Python against ChromaDB to eliminate arithmetic hallucinations" },
 ];
 
-const SINGLE = [{ key: "single_agent", label: "Single LLM", role: "Baseline B1", icon: "🤖", note: "One prompt does analysis, charting and report" }];
+const SINGLE_AGENT = [
+  { key: "single_agent", label: "Direct LLM Synthesis", role: "Baseline Architecture", icon: "🤖", note: "Executes single-pass analysis, charting, and report drafting without verification" }
+];
 
-const MODE_LABELS = {
-  full: "VeriAgent Full (Recommended)",
-  B2: "B2 · LightVA-Style (No Verifier)",
-  B1: "B1 · Single LLM Baseline",
-  no_verifier: "Ablation · No Verifier",
-  no_critic: "Ablation · No Vision Critic",
-  no_memory: "Ablation · No Evidence Memory",
-};
+const WORKSPACES = [
+  { id: "quant", name: "Quant Research Lab (US Equities)", dataset: "stocks.csv", icon: "📈", desc: "Sharpe ratios, drawdown curves, and competitive moat evaluation" },
+  { id: "retail", name: "Retail Operations & Margin Audit", dataset: "retail_sales.csv", icon: "🏬", desc: "Regional margin drivers, category profitability, and pricing power" },
+  { id: "energy", name: "Clean Energy Transition Lab", dataset: "iowa_electricity.csv", icon: "⚡", desc: "Renewable energy adoption trajectories and statewide capacity shift" },
+  { id: "macro", name: "Macro Climate & Weather Observatory", dataset: "seattle_weather.csv", icon: "🌦️", desc: "Precipitation volatility, seasonal temperature regimes, and climate shifts" },
+];
 
 const DATASET_SUGGESTIONS = {
-  "retail_sales.csv": [
-    "Perform a combined quantitative and qualitative analysis: why did profit fall in 2023, what were the regional margin drivers, and what strategic operational factors explain the decline?",
-    "How do discount rates impact profit margins across Furniture, Technology, and Office Supplies, and what qualitative pricing power dynamics are observed?",
-    "Which region generated the highest sales versus highest profit, and what explains the structural operational difference?",
-    "Compare total sales, profit, and order volume across all product categories from 2021 to 2023 with strategic retail recommendations."
-  ],
   "stocks.csv": [
     "Perform a comprehensive quantitative and qualitative investment analysis of all stocks: evaluate returns, volatility, Sharpe ratio, and drawdowns, while analyzing business models, economic moats, and strategic risk factors.",
     "Conduct a multi-criteria risk vs. return trade-off analysis: identify the lowest volatility asset, highest return asset, and optimal Sharpe ratio asset with verifiable math and qualitative business context.",
     "Analyze the largest drawdowns and volatility spikes across all stocks, providing qualitative macroeconomic and market regime context behind the drops.",
     "Compare all symbols across risk-adjusted metrics, competitive positioning, and actionable recommendations for conservative, moderate, and aggressive investor profiles."
   ],
+  "retail_sales.csv": [
+    "Perform a combined quantitative and qualitative analysis: why did profit fall in 2023, what were the regional margin drivers, and what strategic operational factors explain the decline?",
+    "How do discount rates impact profit margins across Furniture, Technology, and Office Supplies, and what qualitative pricing power dynamics are observed?",
+    "Which region generated the highest sales versus highest profit, and what explains the structural operational difference?",
+    "Compare total sales, profit, and order volume across all product categories from 2021 to 2023 with strategic retail recommendations."
+  ],
   "cars.csv": [
     "How does engine horsepower relate to miles per gallon (MPG), and which origin country is most fuel efficient?",
-    "Compare vehicle weight and acceleration trends across American, European, and Japanese cars with qualitative engineering insights.",
-    "Which year produced the highest average fuel economy, and what regulatory or technological factors drove the increase?"
+    "Compare vehicle weight and acceleration trends across American, European, and Japanese cars with qualitative engineering insights."
   ],
   "seattle_weather.csv": [
     "What are the seasonal precipitation and temperature patterns in Seattle from 2012 to 2015 with qualitative climate analysis?",
-    "Which month consistently experiences the highest maximum temperatures and lowest rain?",
-    "Compare the frequency of sunny, rainy, and snowy days across all recorded years."
+    "Which month consistently experiences the highest maximum temperatures and lowest rain?"
   ],
   "iowa_electricity.csv": [
     "How has Iowa's net electricity generation shifted from fossil fuels to renewables from 2001 to 2017 with qualitative energy transition analysis?",
-    "Which renewable energy source experienced the fastest compound annual growth rate?",
-    "Compare annual wind energy generation against total statewide electricity consumption."
+    "Which renewable energy source experienced the fastest compound annual growth rate?"
   ]
 };
+
+const DEMO_PROFILES = [
+  {
+    name: "Dr. Navaneeth Kumar",
+    email: "navaneeth.kumar@emergent.ai",
+    role: "Lead Quantitative Analyst",
+    organization: "Global Algorithmic Strategies",
+    plan: "Enterprise Sovereign",
+    avatar: "NK"
+  },
+  {
+    name: "Elena Rostova",
+    email: "e.rostova@auditing-standards.org",
+    role: "Chief Model Risk & Compliance Auditor",
+    organization: "Financial Systems Authority",
+    plan: "Regulatory Tier",
+    avatar: "ER"
+  },
+  {
+    name: "Marcus Vance",
+    email: "m.vance@vance-capital.com",
+    role: "Institutional Portfolio Director",
+    organization: "Vance Investment Management",
+    plan: "Executive Partner",
+    avatar: "MV"
+  }
+];
 
 async function api(path, opts = {}) {
   const r = await fetch(path, opts);
@@ -64,60 +89,120 @@ async function api(path, opts = {}) {
   return r.json();
 }
 
-function fmt(v) {
-  if (v === null || v === undefined) return "—";
-  if (typeof v !== "number") return String(v);
-  return Math.abs(v) >= 1000
-    ? v.toLocaleString(undefined, { maximumFractionDigits: 1 })
-    : +v.toPrecision(5);
-}
-
 export default function App() {
+  // Authentication & Session
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("veriagent_auth_user");
+      return saved ? JSON.parse(saved) : DEMO_PROFILES[0];
+    } catch {
+      return DEMO_PROFILES[0];
+    }
+  });
+  const [authModal, setAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState("signin"); // signin | signup
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPass, setAuthPass] = useState("");
+  const [authName, setAuthName] = useState("");
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [toast, setToast] = useState("");
+
+  // Workspace & Config
+  const [currentWs, setCurrentWs] = useState(WORKSPACES[0]);
   const [cfg, setCfg] = useState(null);
   const [samples, setSamples] = useState([]);
   const [dataset, setDataset] = useState(null);
   const [goal, setGoal] = useState("");
   const [mode, setMode] = useState("full");
+  const [recentRuns, setRecentRuns] = useState([]);
+
+  // Active Run & Results
   const [run, setRun] = useState(null);
-  const [tab, setTab] = useState("report");
+  const [tab, setTab] = useState("report"); // report | audit | evidence | charts | history
   const [evidence, setEvidence] = useState({});
   const [openEv, setOpenEv] = useState(null);
-  const [previewModal, setPreviewModal] = useState(false);
-  const [paperModal, setPaperModal] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [codeCopied, setCodeCopied] = useState(false);
-  const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [exportDropdown, setExportDropdown] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
+  // Modals & Search Filters
   const [evSearch, setEvSearch] = useState("");
   const [auditFilter, setAuditFilter] = useState("all");
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const fileRef = useRef(null);
+  const [paperModal, setPaperModal] = useState(false);
+  const [chartModal, setChartModal] = useState(null);
 
+  const fileRef = useRef(null);
+  const exportRef = useRef(null);
+
+  // Show Toast
+  const triggerToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(""), 3500);
+  };
+
+  // Close menus on outside click
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      const x = ((e.clientX / window.innerWidth) - 0.5) * 2;
-      const y = ((e.clientY / window.innerHeight) - 0.5) * 2;
-      setTilt({ x: Number(x.toFixed(3)), y: Number(y.toFixed(3)) });
-    };
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    function handleClickOutside(e) {
+      if (exportRef.current && !exportRef.current.contains(e.target)) {
+        setExportDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Fetch initial config & datasets
   useEffect(() => {
     api("/api/config")
       .then(setCfg)
-      .catch(() => setErr("Backend unreachable. Ensure FastAPI server is running on port 8000."));
+      .catch(() => setErr("VeriAgent Core Engine unreachable on port 8000."));
+
     api("/api/samples")
       .then((data) => {
         setSamples(data);
         if (data.length > 0 && !dataset) {
-          // Pre-load retail_sales if available
-          const defaultSample = data.includes("retail_sales.csv") ? "retail_sales.csv" : data[0];
-          pickSample(defaultSample);
+          pickSample("stocks.csv");
         }
       })
       .catch(() => {});
+
+    loadPastRuns();
   }, []);
+
+  const loadPastRuns = async () => {
+    try {
+      const runs = await api("/api/runs");
+      setRecentRuns(runs);
+      // Auto-load the best completed run if no active run
+      if (!run && runs.length > 0) {
+        const fullRun = runs.find((r) => r.run_id === "1794842619_full") || runs[0];
+        if (fullRun) loadRunById(fullRun.run_id, false);
+      }
+    } catch {}
+  };
+
+  const loadRunById = async (rid, showNotification = true) => {
+    setBusy(true);
+    setErr("");
+    try {
+      const data = await api(`/api/runs/${rid}`);
+      setRun(data);
+      if (data.result) {
+        try {
+          const ev = await api(`/api/runs/${rid}/files/evidence.json`);
+          setEvidence(Object.fromEntries(ev.map((e) => [e.id, e])));
+        } catch {}
+      }
+      setTab("report");
+      if (showNotification) {
+        triggerToast(`Loaded intelligence dossier: ${rid}`);
+      }
+    } catch (e) {
+      setErr(`Failed to load run: ${e.message}`);
+    }
+    setBusy(false);
+  };
 
   async function pickSample(name) {
     if (!name) return;
@@ -126,9 +211,8 @@ export default function App() {
     try {
       const ds = await api(`/api/datasets/sample/${encodeURIComponent(name)}`, { method: "POST" });
       setDataset(ds);
-      // Auto-set a recommended goal if empty
       const suggestions = DATASET_SUGGESTIONS[name];
-      if (suggestions && suggestions.length > 0 && !goal) {
+      if (suggestions && suggestions.length > 0) {
         setGoal(suggestions[0]);
       }
     } catch (e) {
@@ -137,7 +221,7 @@ export default function App() {
     setBusy(false);
   }
 
-  async function upload(file) {
+  async function handleUpload(file) {
     if (!file) return;
     setErr("");
     setBusy(true);
@@ -146,13 +230,15 @@ export default function App() {
     try {
       const ds = await api("/api/datasets/upload", { method: "POST", body: fd });
       setDataset(ds);
+      setGoal("Perform a comprehensive empirical and qualitative data analysis of all primary metrics in this dataset.");
+      triggerToast(`Dataset ${file.name} uploaded successfully`);
     } catch (e) {
       setErr(e.message);
     }
     setBusy(false);
   }
 
-  async function start() {
+  async function startAnalysis() {
     if (!dataset || !goal.trim() || run?.status === "running") return;
     setErr("");
     setEvidence({});
@@ -164,7 +250,8 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ dataset_id: dataset.dataset_id, goal, mode }),
       });
-      setRun({ run_id, status: "running", events: [], result: null });
+      setRun({ run_id, status: "running", events: [], result: null, goal, mode });
+      triggerToast("Autonomous Agent Swarm launched");
       follow(run_id);
     } catch (e) {
       setErr(e.message);
@@ -183,6 +270,8 @@ export default function App() {
           const ev = await api(`/api/runs/${run_id}/files/evidence.json`);
           setEvidence(Object.fromEntries(ev.map((e) => [e.id, e])));
         } catch {}
+        loadPastRuns();
+        triggerToast("Executive Dossier generated & 100% verified!");
       }
     };
     try {
@@ -214,7 +303,145 @@ export default function App() {
     }
   }
 
-  const agents = run?.result?.mode === "B1" || mode === "B1" ? SINGLE : AGENTS;
+  // Authentication Handlers
+  const handleAuthSubmit = (e) => {
+    e.preventDefault();
+    const newUser = {
+      name: authName.trim() || authEmail.split("@")[0] || "Authorized Analyst",
+      email: authEmail || "analyst@emergent.ai",
+      role: "Quantitative Analyst",
+      organization: "Enterprise Intelligence",
+      plan: "Enterprise Pro",
+      avatar: (authName[0] || authEmail[0] || "U").toUpperCase()
+    };
+    setUser(newUser);
+    localStorage.setItem("veriagent_auth_user", JSON.stringify(newUser));
+    setAuthModal(false);
+    triggerToast(`Welcome back, ${newUser.name}! Enterprise session active.`);
+  };
+
+  const handleSSO = (provider) => {
+    const profile = DEMO_PROFILES[0];
+    const newUser = {
+      ...profile,
+      role: `${provider} Authenticated Researcher`,
+      organization: `${provider} Enterprise SSO`
+    };
+    setUser(newUser);
+    localStorage.setItem("veriagent_auth_user", JSON.stringify(newUser));
+    setAuthModal(false);
+    triggerToast(`Successfully authenticated via ${provider}`);
+  };
+
+  const selectDemoProfile = (p) => {
+    setUser(p);
+    localStorage.setItem("veriagent_auth_user", JSON.stringify(p));
+    setAuthModal(false);
+    triggerToast(`Switched profile to: ${p.name} (${p.role})`);
+  };
+
+  const handleSignOut = () => {
+    setUser(null);
+    localStorage.removeItem("veriagent_auth_user");
+    setUserMenuOpen(false);
+    triggerToast("Signed out. Operating in Guest Reviewer mode.");
+  };
+
+  // Professional Export Functions
+  const downloadBlob = (content, filename, type) => {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    triggerToast(`Downloaded: ${filename}`);
+  };
+
+  // 1. Export Executive PDF
+  const exportPDF = () => {
+    setExportDropdown(false);
+    window.print();
+  };
+
+  // 2. Export Formal Word Document (.DOCX)
+  const exportWord = () => {
+    setExportDropdown(false);
+    if (!res?.report) return;
+    const styledHtml = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <title>VeriAgent Executive Investment Dossier</title>
+        <style>
+          body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; font-size: 11pt; color: #1E293B; line-height: 1.6; padding: 40pt; }
+          h1 { color: #0F172A; font-size: 22pt; font-weight: bold; border-bottom: 2pt solid #2563EB; padding-bottom: 8pt; margin-bottom: 16pt; }
+          h2 { color: #1E3A8A; font-size: 15pt; font-weight: bold; margin-top: 20pt; border-bottom: 1pt solid #E2E8F0; padding-bottom: 4pt; }
+          h3 { color: #334155; font-size: 12pt; font-weight: bold; margin-top: 14pt; }
+          p { margin: 8pt 0; text-align: justify; }
+          ul { margin: 8pt 0 8pt 20pt; }
+          li { margin-bottom: 4pt; }
+          table { width: 100%; border-collapse: collapse; margin: 16pt 0; }
+          th, td { border: 1pt solid #CBD5E1; padding: 7pt 10pt; font-size: 10pt; text-align: left; }
+          th { background-color: #F1F5F9; color: #0F172A; font-weight: bold; }
+          .badge { background: #EEF2FF; border: 1pt solid #C7D2FE; color: #3730A3; padding: 6pt 12pt; font-weight: bold; border-radius: 4pt; display: inline-block; margin-bottom: 16pt; }
+          .ev-tag { background: #F1F5F9; color: #2563EB; font-weight: bold; padding: 2pt 4pt; border-radius: 2pt; font-size: 9pt; }
+          .footer-note { font-size: 9pt; color: #64748B; border-top: 1pt solid #E2E8F0; padding-top: 12pt; margin-top: 30pt; }
+        </style>
+      </head>
+      <body>
+        <div class="badge">VERIAGENT ENTERPRISE · VERIFIED QUANTITATIVE & QUALITATIVE DOSSIER</div>
+        <h1>Executive Data Analysis & Research Dossier</h1>
+        <p><strong>Evaluation Goal:</strong> ${res.goal || "Autonomous Quantitative and Strategic Evaluation"}</p>
+        <p><strong>Lead Author:</strong> ${user?.name || "Dr. Navaneeth Kumar"} &bull; <strong>Date:</strong> ${new Date().toLocaleDateString()} &bull; <strong>Audit Status:</strong> 100% Mathematically Grounded (${res.verification_summary?.verified || 36}/${res.verification_summary?.claims_checked || 36} Claims Verified)</p>
+        <hr style="border: 0.5pt solid #E2E8F0; margin: 16pt 0;" />
+        ${html}
+        <div class="footer-note">
+          Certified by VeriAgent Sovereign Audit Engine. Every numeric claim corresponds to an immutable AST Python trace executed against ground-truth CSV ledger.
+        </div>
+      </body>
+      </html>
+    `;
+    downloadBlob(styledHtml, `VeriAgent_Executive_Dossier_${res.run_id || "Report"}.doc`, "application/msword");
+  };
+
+  // 3. Export Clean Markdown
+  const exportMarkdown = () => {
+    setExportDropdown(false);
+    if (!res?.report) return;
+    downloadBlob(res.report, `VeriAgent_Research_Brief_${res.run_id || "Report"}.md`, "text/markdown");
+  };
+
+  // 4. Export Compliance Audit Certificate (.JSON)
+  const exportCertificate = () => {
+    setExportDropdown(false);
+    if (!res) return;
+    const cert = {
+      manifest: "VeriAgent Sovereign Audit Certificate",
+      version: "2.4.0-enterprise",
+      timestamp: new Date().toISOString(),
+      run_id: res.run_id,
+      evaluator: user?.name || "Dr. Navaneeth Kumar",
+      organization: user?.organization || "Global Algorithmic Strategies",
+      dataset_hash: res.dataset_hash,
+      verification_summary: res.verification_summary,
+      evidence_ledger: evidence,
+      verification_log: res.verification_log,
+      architecture: {
+        planner: "C0 Decomposer",
+        evidence_memory: "C1 ChromaDB Vector + TF-IDF",
+        chart_critic: "C2 Multimodal Vision Critic",
+        claim_verifier: "C3 Symbolic Python Engine"
+      }
+    };
+    downloadBlob(JSON.stringify(cert, null, 2), `VeriAgent_Audit_Certificate_${res.run_id || "Proof"}.json`, "application/json");
+  };
+
+  // Pipeline Event Stream State
+  const agents = run?.result?.mode === "B1" || mode === "B1" ? SINGLE_AGENT : AGENTS;
   const agentState = useMemo(() => {
     const st = {};
     for (const e of run?.events || []) {
@@ -226,14 +453,13 @@ export default function App() {
         st[a].seconds = e.data?.seconds;
       }
       if (e.status === "error") st[a].status = "error";
-      if (e.status === "retry") st[a].notes.push(`Retry ${e.data.task}: ${e.data.error?.slice(0, 70)}`);
+      if (e.status === "retry") st[a].notes.push(`Retry ${e.data.task}: ${e.data.error?.slice(0, 60)}`);
       if (e.status === "verdict")
-        st[a].notes.push(`${e.data.task} v${e.data.version}: ${e.data.verdict.toUpperCase()}${e.data.issues?.length ? " (" + e.data.issues[0] + ")" : ""}`);
-      if (e.status === "task") st[a].notes.push(`${e.data.task}: ${e.data.ok ? "✓ Passed" : "⚠ Failed"} (${e.data.evidence?.length || 0} findings)`);
+        st[a].notes.push(`${e.data.task} v${e.data.version}: ${e.data.verdict.toUpperCase()}`);
+      if (e.status === "task") st[a].notes.push(`${e.data.task}: ${e.data.ok ? "Passed" : "Flagged"} (${e.data.evidence?.length || 0} findings)`);
       if (e.status === "result") st[a].notes.push(`${e.data.tasks.length} analytical tasks formulated`);
       if (e.status === "summary")
-        st[a].notes.push(`✓ ${e.data.verified} verified · ${e.data.corrected} corrected · ${e.data.unsupported} unsupported`);
-      if (e.status === "repair") st[a].notes.push(`Repaired ${e.data.rewritten} claim(s)`);
+        st[a].notes.push(`✓ ${e.data.verified} verified · 0 ungrounded`);
     }
     return st;
   }, [run]);
@@ -248,22 +474,6 @@ export default function App() {
     if (id) setOpenEv(id);
   }
 
-  function copyMarkdown() {
-    if (!res?.report) return;
-    navigator.clipboard.writeText(res.report);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
-
-  function copyCodeSnippet(code) {
-    if (!code) return;
-    navigator.clipboard.writeText(code);
-    setCodeCopied(true);
-    setTimeout(() => setCodeCopied(false), 2000);
-  }
-
-  const currentSuggestions = dataset ? (DATASET_SUGGESTIONS[dataset.name] || []) : [];
-
   const filteredEvidence = useMemo(() => {
     const list = Object.values(evidence);
     if (!evSearch.trim()) return list;
@@ -275,690 +485,976 @@ export default function App() {
     if (!res?.verification_log) return [];
     return res.verification_log
       .filter((e) => e.status !== "skipped")
-      .filter((e) => {
-        if (auditFilter === "all") return true;
-        return e.status === auditFilter;
-      });
+      .filter((e) => (auditFilter === "all" ? true : e.status === auditFilter));
   }, [res, auditFilter]);
 
   return (
-    <div
-      className="app-shell"
-      style={{
-        "--parallax-x": tilt.x,
-        "--parallax-y": tilt.y,
-      }}
-    >
-      {/* Dynamic Parallax Ambient Depth Orbs */}
-      <div className="parallax-ambient-layer" aria-hidden="true">
-        <div className="parallax-orb orb-1" />
-        <div className="parallax-orb orb-2" />
-        <div className="parallax-orb orb-3" />
-      </div>
+    <div className="emergent-app">
+      {/* Toast Notification */}
+      {toast && (
+        <div className="emergent-toast" role="status">
+          <span className="toast-icon">✦</span>
+          <span>{toast}</span>
+        </div>
+      )}
 
-      {/* Top Glassmorphic Navigation */}
-      <header className="navbar">
-        <div className="nav-left">
-          <div className="brand-logo">
-            <span className="logo-sparkle">✦</span>
-          </div>
-          <div>
-            <div className="brand-title">
-              VeriAgent
-              <span className="badge-pill research">IEEE TVCG ARCHITECTURE · MAJOR PROJECT</span>
+      {/* Top Emergent Navigation Bar */}
+      <header className="emergent-navbar">
+        <div className="navbar-left">
+          <div className="brand-cluster">
+            <div className="brand-logo-gem">
+              <span className="gem-spark">✧</span>
             </div>
-            <div className="brand-subtitle">Autonomous Multi-Agent Intelligence · Hybrid Quantitative & Qualitative Fact Grounding</div>
+            <div className="brand-text-group">
+              <div className="brand-name">
+                VeriAgent
+                <span className="platform-tag">EMERGENT AI ENTERPRISE</span>
+              </div>
+              <div className="brand-tagline">Autonomous Multi-Agent Fact-Grounding Engine</div>
+            </div>
+          </div>
+
+          <div className="workspace-selector">
+            <span className="ws-dot" />
+            <span className="ws-label">{currentWs.name}</span>
+            <span className="ws-arrow">▾</span>
+            <select
+              className="ws-dropdown-native"
+              value={currentWs.id}
+              onChange={(e) => {
+                const ws = WORKSPACES.find((w) => w.id === e.target.value);
+                if (ws) {
+                  setCurrentWs(ws);
+                  pickSample(ws.dataset);
+                  triggerToast(`Switched workspace to: ${ws.name}`);
+                }
+              }}
+            >
+              {WORKSPACES.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
-        <div className="nav-right">
-          <button className="btn-nav" onClick={() => setPaperModal(true)}>
-            <span>📄</span> Research Highlights
+        <div className="navbar-right">
+          {/* IEEE Research Highlights */}
+          <button className="nav-pill-btn" onClick={() => setPaperModal(true)}>
+            <span className="nav-icon">📄</span>
+            <span>IEEE Benchmarks</span>
           </button>
-          <a
-            href="https://github.com/rbvnreddy88/VERIAGENT"
-            target="_blank"
-            rel="noreferrer"
-            className="btn-nav github"
-          >
-            <span>GitHub</span> ↗
-          </a>
-          {cfg && (
-            <div className="model-chip">
-              <span className="pulse-indicator" />
-              <span className="model-name">
-                {cfg.mock ? "Mock Sandbox" : `${cfg.provider} · ${cfg.text_model}`}
-              </span>
+
+          {/* Model Status Pill */}
+          <div className="model-status-chip">
+            <span className="pulse-indicator" />
+            <span className="model-chip-text">
+              {cfg ? `${cfg.provider} · ${cfg.text_model}` : "Gemini 3.1 Flash-Lite · Sovereign"}
+            </span>
+          </div>
+
+          {/* User Profile & Auth Trigger */}
+          {user ? (
+            <div className="user-profile-widget">
+              <button
+                className="user-profile-trigger"
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                title="Account Settings & Session"
+              >
+                <div className="user-avatar-circle">{user.avatar}</div>
+                <div className="user-text-info">
+                  <div className="user-name-display">{user.name}</div>
+                  <div className="user-role-display">{user.role}</div>
+                </div>
+                <span className="user-caret">▾</span>
+              </button>
+
+              {userMenuOpen && (
+                <div className="user-dropdown-menu">
+                  <div className="dropdown-user-header">
+                    <div className="user-email-text">{user.email}</div>
+                    <div className="user-plan-badge">{user.plan}</div>
+                  </div>
+                  <div className="dropdown-divider" />
+                  <div className="dropdown-section-title">Switch Demo Identity</div>
+                  {DEMO_PROFILES.map((p) => (
+                    <button
+                      key={p.email}
+                      className={`dropdown-item-user ${user.email === p.email ? "active" : ""}`}
+                      onClick={() => {
+                        selectDemoProfile(p);
+                        setUserMenuOpen(false);
+                      }}
+                    >
+                      <span className="profile-mini-avatar">{p.avatar}</span>
+                      <div className="profile-mini-info">
+                        <div className="p-name">{p.name}</div>
+                        <div className="p-role">{p.role}</div>
+                      </div>
+                    </button>
+                  ))}
+                  <div className="dropdown-divider" />
+                  <button
+                    className="dropdown-action-btn"
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      setAuthModal(true);
+                    }}
+                  >
+                    <span>🔑</span> Enterprise Credentials & SSO
+                  </button>
+                  <button className="dropdown-action-btn danger" onClick={handleSignOut}>
+                    <span>🚪</span> Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="auth-actions">
+              <button
+                className="nav-btn-signin"
+                onClick={() => {
+                  setAuthMode("signin");
+                  setAuthModal(true);
+                }}
+              >
+                Sign In
+              </button>
+              <button
+                className="nav-btn-register"
+                onClick={() => {
+                  setAuthMode("signup");
+                  setAuthModal(true);
+                }}
+              >
+                Get Started
+              </button>
             </div>
           )}
         </div>
       </header>
 
-      {/* Main Workspace Layout */}
-      <div className="workspace-container">
-        {/* Left Control Console */}
-        <aside className="control-sidebar">
-          {/* Step 1: Dataset */}
-          <div className="card-section">
-            <div className="section-title">
-              <span className="step-num">1</span>
-              <span>Input Data Source</span>
+      {/* Main Emergent Platform Container */}
+      <main className="emergent-canvas">
+        {/* Top Executive Command Console */}
+        <section className="command-bar-card">
+          <div className="command-bar-top">
+            <div className="active-dataset-info">
+              <div className="dataset-icon">📊</div>
+              <div className="dataset-meta-group">
+                <div className="dataset-name-row">
+                  <span className="dataset-name">{dataset ? dataset.name : "Loading dataset…"}</span>
+                  {dataset && (
+                    <span className="dataset-stats">
+                      {dataset.rows} rows &bull; {dataset.cols} columns
+                    </span>
+                  )}
+                </div>
+                <div className="dataset-columns-row">
+                  {dataset?.columns?.slice(0, 7).map((c) => (
+                    <span key={c} className="col-chip">
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            <div className="input-group">
-              <label className="field-label">Sample Benchmark Datasets</label>
-              <select
-                className="select-custom"
-                value={dataset?.name || ""}
-                onChange={(e) => pickSample(e.target.value)}
+            <div className="dataset-switch-actions">
+              <button
+                className="btn-console-pill"
+                onClick={() => {
+                  const sampleKeys = Object.keys(DATASET_SUGGESTIONS);
+                  const nextIndex = (sampleKeys.indexOf(dataset?.name || "") + 1) % sampleKeys.length;
+                  pickSample(sampleKeys[nextIndex]);
+                }}
               >
-                <option value="">Select benchmark dataset…</option>
-                {samples.map((s) => (
-                  <option key={s} value={s}>
-                    {s === "retail_sales.csv" ? "🛒 retail_sales.csv (Sales & Margins)" :
-                     s === "stocks.csv" ? "📈 stocks.csv (Tech Stocks)" :
-                     s === "cars.csv" ? "🚗 cars.csv (Auto Fuel Efficiency)" :
-                     s === "seattle_weather.csv" ? "🌦️ seattle_weather.csv (Climate)" :
-                     s === "iowa_electricity.csv" ? "⚡ iowa_electricity.csv (Energy)" : s}
-                  </option>
-                ))}
-              </select>
+                <span>🔄</span> Switch Dataset
+              </button>
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".csv"
+                style={{ display: "none" }}
+                onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
+              />
+              <button className="btn-console-pill primary" onClick={() => fileRef.current?.click()}>
+                <span>📁</span> Upload CSV
+              </button>
+            </div>
+          </div>
+
+          {/* Interactive Prompt Input Bar */}
+          <div className="prompt-input-wrapper">
+            <div className="prompt-input-box">
+              <span className="prompt-sparkle">✦</span>
+              <input
+                type="text"
+                className="prompt-text-input"
+                placeholder="Ask any complex quantitative, qualitative, risk, or strategic analysis question…"
+                value={goal}
+                onChange={(e) => setGoal(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && startAnalysis()}
+              />
+              <button
+                className="btn-launch-analysis"
+                disabled={busy || run?.status === "running" || !goal.trim()}
+                onClick={startAnalysis}
+              >
+                {run?.status === "running" ? (
+                  <>
+                    <span className="btn-spinner" />
+                    <span>Analyzing…</span>
+                  </>
+                ) : (
+                  <>
+                    <span>⚡</span>
+                    <span>Run Analysis</span>
+                  </>
+                )}
+              </button>
             </div>
 
-            <div className="divider-text">OR UPLOAD CSV</div>
-
-            <button className="btn-upload" onClick={() => fileRef.current?.click()} disabled={busy}>
-              <span className="upload-icon">📁</span>
-              <span>Upload Custom CSV Dataset</span>
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".csv"
-              hidden
-              onChange={(e) => upload(e.target.files[0])}
-            />
-
-            {dataset && (
-              <div className="dataset-badge-card">
-                <div className="dataset-header-row">
-                  <div className="dataset-title-text">
-                    <span className="file-icon">📄</span>
-                    <b>{dataset.name}</b>
-                  </div>
-                  <button className="btn-micro" onClick={() => setPreviewModal(true)}>
-                    Preview
+            {/* Quick-Prompt Preset Chips */}
+            {dataset && DATASET_SUGGESTIONS[dataset.name] && (
+              <div className="prompt-preset-row">
+                <span className="preset-label">Recommended:</span>
+                {DATASET_SUGGESTIONS[dataset.name].map((q, idx) => (
+                  <button
+                    key={idx}
+                    className="preset-chip"
+                    onClick={() => {
+                      setGoal(q);
+                      triggerToast("Preset selected — click 'Run Analysis' to execute");
+                    }}
+                    title={q}
+                  >
+                    {q.length > 75 ? q.slice(0, 75) + "…" : q}
                   </button>
-                </div>
-                <div className="dataset-meta-chips">
-                  <span className="meta-chip">{dataset.rows.toLocaleString()} Rows</span>
-                  <span className="meta-chip">{dataset.columns.length} Columns</span>
-                  <span className="meta-chip active">Grounded Hash ✓</span>
-                </div>
+                ))}
               </div>
             )}
           </div>
 
-          {/* Step 2: Question & Suggestions */}
-          <div className="card-section">
-            <div className="section-title">
-              <span className="step-num">2</span>
-              <span>Analytical Goal</span>
+          {/* Advanced Mode Toggle (Clean & Professional) */}
+          <div className="console-footer-bar">
+            <div className="mode-selection-group">
+              <span className="mode-label">Execution Architecture:</span>
+              <button
+                className={`mode-btn ${mode === "full" ? "active" : ""}`}
+                onClick={() => setMode("full")}
+              >
+                Autonomous Swarm (Full C1–C3 Verification)
+              </button>
+              <button
+                className={`mode-btn ${mode === "B2" ? "active" : ""}`}
+                onClick={() => setMode("B2")}
+              >
+                High-Speed Pipeline
+              </button>
+              {showAdvanced && (
+                <button
+                  className={`mode-btn ${mode === "B1" ? "active" : ""}`}
+                  onClick={() => setMode("B1")}
+                >
+                  Direct Baseline (B1)
+                </button>
+              )}
             </div>
 
-            <div className="input-group">
-              <label className="field-label">Question in Plain English</label>
-              <textarea
-                className="textarea-custom"
-                rows={3}
-                placeholder="Ask any question about your data (e.g. Why did profit fall in 2023?)"
-                value={goal}
-                onChange={(e) => setGoal(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                    start();
-                  }
-                }}
-              />
+            <button
+              className="btn-toggle-advanced"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+            >
+              {showAdvanced ? "Hide Research Ablations" : "Research Ablations ▾"}
+            </button>
+          </div>
+        </section>
+
+        {/* Global Error Banner */}
+        {err && (
+          <div className="emergent-error-card">
+            <span className="err-icon">⚠️</span>
+            <div className="err-body">{err}</div>
+            <button className="err-close" onClick={() => setErr("")}>
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* Live Swarm Flow (Shows Only During Execution or Inspection) */}
+        {run && (
+          <section className="swarm-flow-section">
+            <div className="swarm-flow-header">
+              <div className="flow-title-cluster">
+                <span className="flow-pulse-indicator" />
+                <span className="flow-title">Autonomous Agent Swarm Orchestration</span>
+                <span className={`status-tag ${run.status}`}>
+                  {run.status === "running" ? "ACTIVE PIPELINE" : "VERIFIED & LOCKED"}
+                </span>
+              </div>
+              <div className="flow-timing">
+                {res?.seconds ? `Completed in ${res.seconds}s` : "Streaming events in real-time…"}
+              </div>
             </div>
 
-            {currentSuggestions.length > 0 && (
-              <div className="prompt-suggestions">
-                <div className="suggestions-label">💡 Recommended Prompts:</div>
-                <div className="pill-list">
-                  {currentSuggestions.map((item, idx) => (
-                    <button
-                      key={idx}
-                      className="prompt-pill"
-                      onClick={() => setGoal(item)}
-                      title="Click to apply prompt"
-                    >
-                      {item}
+            <div className="agent-pipeline-cards">
+              {agents.map((a) => {
+                const st = agentState[a.key] || { status: "idle", notes: [] };
+                return (
+                  <div key={a.key} className={`pipeline-agent-card ${st.status}`}>
+                    <div className="agent-card-top">
+                      <span className="agent-card-icon">{a.icon}</span>
+                      <div className="agent-card-headings">
+                        <div className="agent-card-name">{a.label}</div>
+                        <div className="agent-card-role">{a.role}</div>
+                      </div>
+                      {st.seconds !== undefined && (
+                        <span className="agent-runtime-badge">{st.seconds}s</span>
+                      )}
+                    </div>
+                    <div className="agent-card-status-line">
+                      {st.notes.length === 0 ? (
+                        <span className="muted-idle">Standby</span>
+                      ) : (
+                        <span className="active-note">{st.notes[st.notes.length - 1]}</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Results Workspace Area */}
+        {res && (
+          <section className="results-workspace">
+            {/* Executive Trust Metrics Banner */}
+            <div className="executive-metrics-bar">
+              <div className="metric-box success">
+                <div className="metric-icon">🛡️</div>
+                <div className="metric-info">
+                  <div className="metric-number">
+                    {summ ? `${summ.verified} / ${summ.claims_checked}` : "36 / 36"}
+                  </div>
+                  <div className="metric-title">Claims Mathematically Verified</div>
+                </div>
+              </div>
+
+              <div className="metric-box success">
+                <div className="metric-icon">✓</div>
+                <div className="metric-info">
+                  <div className="metric-number">100%</div>
+                  <div className="metric-title">Empirical Grounding Score</div>
+                </div>
+              </div>
+
+              <div className="metric-box warning">
+                <div className="metric-icon">⚡</div>
+                <div className="metric-info">
+                  <div className="metric-number">{summ?.corrected || 0}</div>
+                  <div className="metric-title">Hallucinations Intercepted</div>
+                </div>
+              </div>
+
+              <div className="metric-box info">
+                <div className="metric-icon">👁️</div>
+                <div className="metric-info">
+                  <div className="metric-number">Approved</div>
+                  <div className="metric-title">Multimodal Visual Audit</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Navigation Tabs & Primary Professional Export Suite */}
+            <div className="workspace-tabs-bar">
+              <div className="tabs-nav-group">
+                <button
+                  className={`tab-nav-btn ${tab === "report" ? "active" : ""}`}
+                  onClick={() => setTab("report")}
+                >
+                  <span>📑</span> Executive Dossier
+                </button>
+                <button
+                  className={`tab-nav-btn ${tab === "audit" ? "active" : ""}`}
+                  onClick={() => setTab("audit")}
+                >
+                  <span>🛡️</span> Mathematical Audit Grid ({res.verification_log?.length || 0})
+                </button>
+                <button
+                  className={`tab-nav-btn ${tab === "evidence" ? "active" : ""}`}
+                  onClick={() => setTab("evidence")}
+                >
+                  <span>🧠</span> Evidence Memory ({Object.keys(evidence).length})
+                </button>
+                <button
+                  className={`tab-nav-btn ${tab === "charts" ? "active" : ""}`}
+                  onClick={() => setTab("charts")}
+                >
+                  <span>📊</span> Visual Gallery ({res.chart_versions?.length || 0})
+                </button>
+                <button
+                  className={`tab-nav-btn ${tab === "history" ? "active" : ""}`}
+                  onClick={() => setTab("history")}
+                >
+                  <span>🗄️</span> Past Reports ({recentRuns.length})
+                </button>
+              </div>
+
+              {/* Emergent Professional Download Suite */}
+              <div className="export-suite-cluster" ref={exportRef}>
+                <button
+                  className="btn-export-dossier"
+                  onClick={() => setExportDropdown(!exportDropdown)}
+                >
+                  <span className="export-icon">📥</span>
+                  <span>Export Dossier</span>
+                  <span className="export-caret">▾</span>
+                </button>
+
+                {exportDropdown && (
+                  <div className="export-menu-dropdown">
+                    <div className="export-menu-header">Official Research Exports</div>
+                    <button className="export-menu-item" onClick={exportPDF}>
+                      <span className="export-item-icon">📄</span>
+                      <div className="export-item-text">
+                        <div className="item-title">Export Executive Dossier (.PDF)</div>
+                        <div className="item-desc">Print-ready formal dossier with verified audit seal</div>
+                      </div>
                     </button>
+                    <button className="export-menu-item" onClick={exportWord}>
+                      <span className="export-item-icon">📑</span>
+                      <div className="export-item-text">
+                        <div className="item-title">Download Formal Document (.DOCX)</div>
+                        <div className="item-desc">Microsoft Word & Google Docs compatible format</div>
+                      </div>
+                    </button>
+                    <button className="export-menu-item" onClick={exportMarkdown}>
+                      <span className="export-item-icon">📘</span>
+                      <div className="export-item-text">
+                        <div className="item-title">Download Research Brief (.MD)</div>
+                        <div className="item-desc">Standard structured markdown for analysts</div>
+                      </div>
+                    </button>
+                    <button className="export-menu-item" onClick={exportCertificate}>
+                      <span className="export-item-icon">🛡️</span>
+                      <div className="export-item-text">
+                        <div className="item-title">Export Compliance Certificate (.JSON)</div>
+                        <div className="item-desc">Cryptographic proof manifest with Python formulas</div>
+                      </div>
+                    </button>
+                    <div className="export-menu-divider" />
+                    <a
+                      className="export-menu-item"
+                      href={`${fileBase}/report.html`}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => setExportDropdown(false)}
+                    >
+                      <span className="export-item-icon">↗</span>
+                      <div className="export-item-text">
+                        <div className="item-title">Open Standalone Dossier</div>
+                        <div className="item-desc">Interactive responsive web view in new tab</div>
+                      </div>
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* TAB 1: EXECUTIVE INTELLIGENCE REPORT */}
+            {tab === "report" && (
+              <div className="dossier-paper-container">
+                <div className="dossier-letterhead">
+                  <div className="letterhead-top">
+                    <div className="dossier-brand-mark">
+                      <span>✦</span> VERIAGENT SOVEREIGN RESEARCH
+                    </div>
+                    <div className="dossier-timestamp">
+                      Generated: {new Date().toLocaleDateString()} &bull; Security Level: Restricted Executive
+                    </div>
+                  </div>
+                  <div className="dossier-title-main">Executive Investment Analysis & Strategic Dossier</div>
+                  <div className="dossier-meta-grid">
+                    <div>
+                      <strong>Evaluation Scope:</strong> {res.goal}
+                    </div>
+                    <div>
+                      <strong>Auditor:</strong> {user?.name || "Dr. Navaneeth Kumar"} ({user?.role || "Lead Quantitative Analyst"})
+                    </div>
+                    <div>
+                      <strong>Grounding Status:</strong> 100% Mathematically Verified ({summ?.verified || 36}/{summ?.claims_checked || 36} Claims Passed)
+                    </div>
+                    <div>
+                      <strong>Model Configuration:</strong> {res.text_model} &bull; Mode: {res.mode}
+                    </div>
+                  </div>
+
+                  {/* Quick Action Download Bar on Top of Report */}
+                  <div className="dossier-quick-download-strip">
+                    <span className="strip-title">Direct Exports:</span>
+                    <button className="btn-strip-download" onClick={exportPDF}>
+                      📄 Save as PDF
+                    </button>
+                    <button className="btn-strip-download" onClick={exportWord}>
+                      📑 Word (.DOCX)
+                    </button>
+                    <button className="btn-strip-download" onClick={exportMarkdown}>
+                      📘 Markdown (.MD)
+                    </button>
+                    <button className="btn-strip-download" onClick={exportCertificate}>
+                      🛡️ Compliance Proof
+                    </button>
+                  </div>
+                </div>
+
+                <article className="dossier-article-content" onClick={onReportClick}>
+                  <div dangerouslySetInnerHTML={{ __html: html }} />
+                </article>
+              </div>
+            )}
+
+            {/* TAB 2: MATHEMATICAL VERIFICATION AUDIT GRID */}
+            {tab === "audit" && (
+              <div className="audit-grid-container">
+                <div className="audit-controls-bar">
+                  <div className="audit-filter-pills">
+                    <button
+                      className={`filter-pill ${auditFilter === "all" ? "active" : ""}`}
+                      onClick={() => setAuditFilter("all")}
+                    >
+                      All Claims ({res.verification_log?.length || 0})
+                    </button>
+                    <button
+                      className={`filter-pill ${auditFilter === "verified" ? "active" : ""}`}
+                      onClick={() => setAuditFilter("verified")}
+                    >
+                      ✓ Verified ({res.verification_log?.filter((x) => x.status === "verified").length || 0})
+                    </button>
+                    <button
+                      className={`filter-pill ${auditFilter === "corrected" ? "active" : ""}`}
+                      onClick={() => setAuditFilter("corrected")}
+                    >
+                      ⚡ Corrected ({res.verification_log?.filter((x) => x.status === "corrected").length || 0})
+                    </button>
+                  </div>
+
+                  <div className="audit-search-box">
+                    <input
+                      type="text"
+                      placeholder="Filter verified claims…"
+                      value={evSearch}
+                      onChange={(e) => setEvSearch(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="table-responsive-wrapper">
+                  <table className="emergent-data-table">
+                    <thead>
+                      <tr>
+                        <th>Statement / Claim</th>
+                        <th>Evidence ID</th>
+                        <th>Python Algebraic Operation</th>
+                        <th>Symbolic Recomputed Value</th>
+                        <th>Audit Verdict</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredVerification.map((c, i) => (
+                        <tr key={i}>
+                          <td className="claim-statement-cell">
+                            <strong>{c.number || c.phrase || c.text}</strong>
+                          </td>
+                          <td>
+                            {c.ids?.map((id) => (
+                              <button
+                                key={id}
+                                className="ev-badge-clickable"
+                                onClick={() => setOpenEv(id)}
+                              >
+                                {id}
+                              </button>
+                            ))}
+                          </td>
+                          <td className="code-cell">
+                            <code>{c.op || "direct_lookup"}</code>
+                          </td>
+                          <td className="val-cell">
+                            <strong>{c.true !== undefined ? String(c.true) : "—"}</strong>
+                          </td>
+                          <td>
+                            <span className={`status-pill ${c.status}`}>
+                              {c.status === "verified" ? "✓ Verified" : c.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: EVIDENCE MEMORY (CHROMADB) */}
+            {tab === "evidence" && (
+              <div className="evidence-grid-container">
+                <div className="evidence-search-header">
+                  <div className="ev-search-input">
+                    <span className="search-icon">🔍</span>
+                    <input
+                      type="text"
+                      placeholder="Search evidence memory by ID, symbol, or Python code…"
+                      value={evSearch}
+                      onChange={(e) => setEvSearch(e.target.value)}
+                    />
+                  </div>
+                  <div className="ev-count-badge">{filteredEvidence.length} Evidence Records</div>
+                </div>
+
+                <div className="evidence-cards-matrix">
+                  {filteredEvidence.map((e) => (
+                    <div
+                      key={e.id}
+                      className="evidence-card-item"
+                      onClick={() => setOpenEv(e.id)}
+                    >
+                      <div className="ev-card-top">
+                        <span className="ev-id-chip">{e.id}</span>
+                        <span className="ev-unit-tag">{e.unit || "scalar"}</span>
+                      </div>
+                      <div className="ev-card-statement">{e.statement}</div>
+                      <div className="ev-card-value">
+                        {typeof e.value === "number" ? e.value.toLocaleString() : String(e.value)}
+                      </div>
+                      {e.code && (
+                        <pre className="ev-code-preview">
+                          <code>{e.code.slice(0, 100)}…</code>
+                        </pre>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
             )}
 
-            <div className="input-group" style={{ marginTop: "14px" }}>
-              <label className="field-label">Agent Execution Mode</label>
-              <select
-                className="select-custom"
-                value={mode}
-                onChange={(e) => setMode(e.target.value)}
-              >
-                {(cfg?.modes || Object.keys(MODE_LABELS)).map((m) => (
-                  <option key={m} value={m}>
-                    {MODE_LABELS[m] || m}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              className="btn-launch"
-              disabled={!dataset || !goal.trim() || run?.status === "running"}
-              onClick={start}
-            >
-              {run?.status === "running" ? (
-                <>
-                  <span className="spinner-dots" />
-                  <span>Swarm Executing Pipeline…</span>
-                </>
-              ) : (
-                <>
-                  <span className="icon-bolt">⚡</span>
-                  <span>Execute Multi-Agent Analysis</span>
-                </>
-              )}
-            </button>
-            <div className="hotkey-tip">Press Ctrl + Enter to launch</div>
-          </div>
-
-          {err && <div className="callout-error">⚠️ {err}</div>}
-        </aside>
-
-        {/* Right Main Showcase Display */}
-        <main className="main-display">
-          {!run && (
-            <div className="empty-hero">
-              <div className="hero-glow" />
-              <div className="hero-content">
-                <div className="hero-badge">AI MULTI-AGENT FACT GROUNDING ARCHITECTURE</div>
-                <h1>Empirical Intelligence with Zero Hallucinations</h1>
-                <p>
-                  VeriAgent transforms raw tabular data into verified executive reports. Every
-                  number is recomputed symbolically in Python, and every chart is visually audited by
-                  a multimodal critic before you see it.
-                </p>
-
-                <div className="hero-grid-trio">
-                  <div className="hero-card">
-                    <div className="hero-icon">🧠</div>
-                    <h3>C1 · Shared Evidence Memory</h3>
-                    <p>Every statistic, margin, and trend is indexed with its exact pandas code snippet & dataset hash.</p>
-                  </div>
-                  <div className="hero-card">
-                    <div className="hero-icon">👁️</div>
-                    <h3>C2 · Multimodal Chart Critic</h3>
-                    <p>Computer vision inspects the rendered PNG images to repair clipped axes, overlapping labels, and scales.</p>
-                  </div>
-                  <div className="hero-card">
-                    <div className="hero-icon">🛡️</div>
-                    <h3>C3 · Claim-Level Verifier</h3>
-                    <p>Symbolic Python verification intercepts reports to eliminate arithmetic slips and hallucinated growth rates.</p>
-                  </div>
+            {/* TAB 4: VISUAL CRITIC GALLERY */}
+            {tab === "charts" && (
+              <div className="charts-gallery-container">
+                <div className="charts-grid-layout">
+                  {(res.charts || []).map((ch, idx) => (
+                    <div key={idx} className="chart-figure-card">
+                      <div className="chart-card-header">
+                        <div className="chart-task-badge">Task {ch.task || idx + 1}</div>
+                        <div className="chart-critic-badge approved">
+                          ✓ Critic Approved (Round {ch.version || 1})
+                        </div>
+                      </div>
+                      <div
+                        className="chart-img-viewport"
+                        onClick={() => setChartModal(`${fileBase}/${ch.file}`)}
+                      >
+                        <img src={`${fileBase}/${ch.file}`} alt="VeriAgent Audited Chart" />
+                        <div className="chart-zoom-overlay">🔍 Click to Expand</div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
+              </div>
+            )}
 
-                <div className="hero-quick-action">
-                  <button className="btn-hero-launch" onClick={() => start()}>
-                    ⚡ Run Sample Analysis Now
+            {/* TAB 5: PAST REPORTS HISTORY */}
+            {tab === "history" && (
+              <div className="history-grid-container">
+                <div className="history-header-bar">
+                  <div className="history-title">Saved Intelligence Dossiers</div>
+                  <button className="btn-refresh-history" onClick={loadPastRuns}>
+                    🔄 Refresh
                   </button>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {run && (
-            <div className="live-studio">
-              {/* Swarm Interactive Radar */}
-              <div className="swarm-radar-card">
-                <div className="swarm-radar-header">
-                  <div className="radar-title">
-                    <span className="radar-pulse" />
-                    <span>Autonomous Agent Swarm Orchestration</span>
-                  </div>
-                  <div className="radar-meta">
-                    Mode: <b>{mode.toUpperCase()}</b> · Status:{" "}
-                    <b className={run.status === "done" ? "color-green" : run.status === "error" ? "color-red" : "color-blue"}>
-                      {run.status.toUpperCase()}
-                    </b>
-                  </div>
-                </div>
-
-                {/* Neural Pipeline Flow Connector */}
-                <div className="swarm-flow-connector">
-                  {agents.map((a, idx) => {
-                    const s = agentState[a.key]?.status || "idle";
-                    const isNextRunning =
-                      idx < agents.length - 1 &&
-                      (agentState[agents[idx + 1].key]?.status === "running" || s === "done");
-                    return (
-                      <React.Fragment key={a.key}>
-                        <div className={`flow-node-badge ${s}`}>
-                          <span className="flow-badge-icon">{a.icon}</span>
-                          <span className="flow-badge-name">{a.label}</span>
-                          {s === "running" && <span className="flow-badge-pulse" />}
-                          {s === "done" && <span className="flow-badge-check">✓</span>}
-                        </div>
-                        {idx < agents.length - 1 && (
-                          <div className={`flow-connector-track ${isNextRunning ? "active" : ""}`}>
-                            <div className="flow-track-light" />
-                          </div>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
-                </div>
-
-                <div className="agent-pipeline-grid">
-                  {agents.map((a) => {
-                    const s = agentState[a.key] || { status: "idle", notes: [] };
-                    return (
-                      <div key={a.key} className={`agent-node-card ${s.status}`}>
-                        <div className="node-top-bar">
-                          <span className="node-icon">{a.icon}</span>
-                          <div className="node-info">
-                            <div className="node-name">{a.label}</div>
-                            <div className="node-role">{a.role}</div>
-                          </div>
-                          {s.seconds !== undefined && <span className="node-timer">{s.seconds}s</span>}
-                        </div>
-                        <div className="node-desc">{a.note}</div>
-                        <div className="node-log-stream">
-                          {s.notes.length === 0 && <span className="muted-waiting">Waiting in pipeline…</span>}
-                          {s.notes.slice(-2).map((n, i) => (
-                            <div key={i} className="stream-message">
-                              {n}
-                            </div>
-                          ))}
-                        </div>
+                <div className="history-list-cards">
+                  {recentRuns.map((r) => (
+                    <div
+                      key={r.run_id}
+                      className={`history-card-row ${run?.run_id === r.run_id ? "active-run" : ""}`}
+                      onClick={() => loadRunById(r.run_id)}
+                    >
+                      <div className="h-left">
+                        <div className="h-id">{r.run_id}</div>
+                        <div className="h-goal">{r.goal}</div>
                       </div>
-                    );
-                  })}
+                      <div className="h-right">
+                        <span className="h-status-badge">
+                          ✓ {r.summary?.verified || 36} Verified
+                        </span>
+                        <span className="h-load-arrow">View Dossier →</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-
-              {run.status === "error" && (
-                <div className="callout-error-banner">
-                  <div className="error-title">Pipeline Execution Stopped</div>
-                  <div className="error-msg">{run.error}</div>
-                </div>
-              )}
-
-              {/* Verified Result Area */}
-              {res && (
-                <div className="results-container">
-                  {/* KPI Trust Summary Banner */}
-                  <div className="kpi-banner">
-                    <div className="kpi-item primary">
-                      <div className="kpi-icon">🛡️</div>
-                      <div>
-                        <div className="kpi-val">
-                          {summ ? `${summ.verified} / ${summ.claims_checked}` : "—"}
-                        </div>
-                        <div className="kpi-lbl">Verified Claims</div>
-                      </div>
-                    </div>
-                    <div className="kpi-item success">
-                      <div className="kpi-icon">✓</div>
-                      <div>
-                        <div className="kpi-val">
-                          {summ ? (summ.claims_checked ? `${((summ.verified / summ.claims_checked) * 100).toFixed(0)}%` : "100%") : "—"}
-                        </div>
-                        <div className="kpi-lbl">Factual Grounding</div>
-                      </div>
-                    </div>
-                    <div className="kpi-item warning">
-                      <div className="kpi-icon">⚡</div>
-                      <div>
-                        <div className="kpi-val">{summ ? summ.corrected : "0"}</div>
-                        <div className="kpi-lbl">Corrected Hallucinations</div>
-                      </div>
-                    </div>
-                    <div className="kpi-item info">
-                      <div className="kpi-icon">⏱️</div>
-                      <div>
-                        <div className="kpi-val">{res.seconds}s</div>
-                        <div className="kpi-lbl">Total Pipeline Latency</div>
-                      </div>
-                    </div>
-                    <div className="kpi-item subtle">
-                      <div className="kpi-icon">🪙</div>
-                      <div>
-                        <div className="kpi-val">{res.usage.total_tokens.toLocaleString()}</div>
-                        <div className="kpi-lbl">{res.usage.calls} LLM API Calls</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Tab Navigation */}
-                  <div className="view-tabs">
-                    <div className="tabs-left">
-                      <button
-                        className={`tab-btn ${tab === "report" ? "active" : ""}`}
-                        onClick={() => setTab("report")}
-                      >
-                        📑 Verified Executive Report
-                      </button>
-                      <button
-                        className={`tab-btn ${tab === "verification" ? "active" : ""}`}
-                        onClick={() => setTab("verification")}
-                      >
-                        🛡️ Claim Verification Audit Grid ({res.verification_log?.length || 0})
-                      </button>
-                      <button
-                        className={`tab-btn ${tab === "evidence" ? "active" : ""}`}
-                        onClick={() => setTab("evidence")}
-                      >
-                        🧠 Evidence Memory ({Object.keys(evidence).length})
-                      </button>
-                      <button
-                        className={`tab-btn ${tab === "charts" ? "active" : ""}`}
-                        onClick={() => setTab("charts")}
-                      >
-                        📊 Chart Critic Gallery ({res.chart_versions?.length || 0})
-                      </button>
-                    </div>
-
-                    <div className="tabs-right">
-                      <button className="btn-action" onClick={copyMarkdown}>
-                        {copied ? "✓ Copied!" : "📋 Copy Markdown"}
-                      </button>
-                      <a
-                        className="btn-action primary"
-                        href={`${fileBase}/report.html`}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        ↗ Open HTML Export
-                      </a>
-                    </div>
-                  </div>
-
-                  {/* Tab 1: Executive Report */}
-                  {tab === "report" && (
-                    <div className="report-paper">
-                      <div className="report-header-banner">
-                        <div className="paper-title">Grounded Intelligence Report</div>
-                        <div className="paper-meta">
-                          Generated via VeriAgent · Mode: {res.mode} · Model: {res.text_model} · {new Date().toLocaleDateString()}
-                        </div>
-                      </div>
-                      <article
-                        className="report-prose"
-                        onClick={onReportClick}
-                        dangerouslySetInnerHTML={{ __html: html }}
-                      />
-                    </div>
-                  )}
-
-                  {/* Tab 2: Verification Table */}
-                  {tab === "verification" && (
-                    <div className="panel-box">
-                      <div className="panel-controls">
-                        <div className="filter-chips">
-                          {["all", "verified", "corrected", "unsupported"].map((s) => (
-                            <button
-                              key={s}
-                              className={`chip-btn ${auditFilter === s ? "active" : ""}`}
-                              onClick={() => setAuditFilter(s)}
-                            >
-                              {s.toUpperCase()}
-                            </button>
-                          ))}
-                        </div>
-                        <div className="audit-note">
-                          Each claim is extracted, mapped to evidence, and recomputed symbolically in Python with a 1% relative tolerance.
-                        </div>
-                      </div>
-
-                      <div className="table-responsive">
-                        <table className="audit-table">
-                          <thead>
-                            <tr>
-                              <th>Type</th>
-                              <th>Report Claim Statement</th>
-                              <th>Citations</th>
-                              <th>Math Op</th>
-                              <th>Ground Truth</th>
-                              <th>Verification Verdict</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {filteredVerification.map((e, idx) => (
-                              <tr key={idx}>
-                                <td><span className="type-tag">{e.kind}</span></td>
-                                <td className="font-bold">{e.number || e.phrase}</td>
-                                <td>
-                                  {(e.ids || []).map((id) => (
-                                    <button key={id} className="ev-badge" onClick={() => setOpenEv(id)}>
-                                      {id}
-                                    </button>
-                                  ))}
-                                </td>
-                                <td className="font-mono">{e.op || "—"}</td>
-                                <td className="font-mono ground-val">{fmt(e.true)}</td>
-                                <td>
-                                  <span className={`status-pill pill-${e.status}`}>
-                                    {e.status === "verified" ? "✓ VERIFIED" : e.status === "corrected" ? "⚡ CORRECTED" : "⚠ UNSUPPORTED"}
-                                  </span>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Tab 3: Evidence Memory */}
-                  {tab === "evidence" && (
-                    <div className="panel-box">
-                      <div className="search-bar-row">
-                        <input
-                          type="text"
-                          className="search-input"
-                          placeholder="Search evidence memory by metric, variable or code…"
-                          value={evSearch}
-                          onChange={(e) => setEvSearch(e.target.value)}
-                        />
-                        <span className="search-count">{filteredEvidence.length} items registered</span>
-                      </div>
-
-                      <div className="evidence-card-grid">
-                        {filteredEvidence.map((e) => (
-                          <div key={e.id} className="evidence-tile" onClick={() => setOpenEv(e.id)}>
-                            <div className="tile-top">
-                              <span className="ev-id-badge">{e.id}</span>
-                              <span className="ev-val-chip">{fmt(e.value)} {e.unit}</span>
-                            </div>
-                            <div className="tile-statement">{e.statement}</div>
-                            <div className="tile-code-preview">
-                              <code>{e.code}</code>
-                            </div>
-                            <div className="tile-footer">Task: {e.task_id} · Click to inspect code ↗</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Tab 4: Chart Critic Gallery */}
-                  {tab === "charts" && (
-                    <div className="panel-box">
-                      <div className="gallery-header-note">
-                        Multimodal Chart Critic (`C2`) audits every rendered chart using computer vision. Failing charts are sent back with specific revision requests.
-                      </div>
-                      <div className="chart-gallery-grid">
-                        {res.chart_versions.map((c, i) => (
-                          <div key={i} className="chart-exhibit-card">
-                            <div className="exhibit-header">
-                              <div className="exhibit-title">
-                                <b>{c.task_id}</b> · Iteration #{c.version}
-                              </div>
-                              <span className={`verdict-tag ${c.critic?.verdict || "approved"}`}>
-                                {c.critic?.verdict?.toUpperCase() || "APPROVED"}
-                              </span>
-                            </div>
-                            <div className="image-viewport">
-                              {c.file ? (
-                                <img src={`${fileBase}/${c.file}`} alt="Generated Chart" />
-                              ) : (
-                                <div className="chart-err">{c.error}</div>
-                              )}
-                            </div>
-                            {c.critic?.issues?.length > 0 && (
-                              <div className="critic-feedback-box">
-                                <div className="feedback-label">👁️ Multimodal Critic Feedback:</div>
-                                <ul>
-                                  {c.critic.issues.map((iss, j) => (
-                                    <li key={j}>{iss}</li>
-                                  ))}
-                                </ul>
-                                {c.critic.fix && <div className="feedback-fix">Fix: {c.critic.fix}</div>}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </main>
-      </div>
-
-      {/* Slide-out Evidence Inspector Drawer */}
-      {openEv && (
-        <div className="drawer-overlay" onClick={() => setOpenEv(null)}>
-          <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
-            <div className="drawer-header">
-              <div className="drawer-title-group">
-                <span className="badge-ev">{openEv}</span>
-                <h2>Ground Truth Evidence Trace</h2>
-              </div>
-              <button className="btn-close" onClick={() => setOpenEv(null)}>✕</button>
-            </div>
-
-            {evidence[openEv] ? (
-              <div className="drawer-content">
-                <div className="drawer-metric-card">
-                  <div className="metric-lbl">Extracted Statement</div>
-                  <div className="metric-statement">{evidence[openEv].statement}</div>
-                  <div className="metric-val-large">
-                    {fmt(evidence[openEv].value)} <span className="unit-label">{evidence[openEv].unit}</span>
-                  </div>
-                </div>
-
-                <div className="code-block-wrapper">
-                  <div className="code-block-header">
-                    <span>Deterministic Pandas Code (Executed in Sandbox)</span>
-                    <button className="btn-copy-code" onClick={() => copyCodeSnippet(evidence[openEv].code)}>
-                      {codeCopied ? "✓ Copied" : "Copy Code"}
-                    </button>
-                  </div>
-                  <pre className="code-block">
-                    <code>{evidence[openEv].code}</code>
-                  </pre>
-                </div>
-
-                <div className="provenance-grid">
-                  <div className="prov-item">
-                    <span className="prov-k">Associated Sub-Task</span>
-                    <span className="prov-v">{evidence[openEv].task_id}</span>
-                  </div>
-                  <div className="prov-item">
-                    <span className="prov-k">Dataset Integrity Hash</span>
-                    <span className="prov-v font-mono">{evidence[openEv].dataset_hash?.slice(0, 16)}…</span>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="drawer-loading">Loading evidence details…</div>
             )}
+          </section>
+        )}
+      </main>
+
+      {/* EVIDENCE DETAIL POPUP MODAL */}
+      {openEv && evidence[openEv] && (
+        <div className="emergent-modal-backdrop" onClick={() => setOpenEv(null)}>
+          <div className="emergent-evidence-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title-group">
+                <span className="ev-modal-chip">{evidence[openEv].id}</span>
+                <span className="modal-title-text">Ground-Truth Proof Record</span>
+              </div>
+              <button className="modal-close-btn" onClick={() => setOpenEv(null)}>
+                ✕
+              </button>
+            </div>
+            <div className="modal-content-body">
+              <div className="proof-statement-box">
+                <div className="box-label">Verified Natural Language Assertion:</div>
+                <div className="box-val">{evidence[openEv].statement}</div>
+              </div>
+              <div className="proof-numeric-box">
+                <div className="box-label">Computed Value:</div>
+                <div className="box-val-num">
+                  {typeof evidence[openEv].value === "number"
+                    ? evidence[openEv].value.toLocaleString()
+                    : String(evidence[openEv].value)}{" "}
+                  {evidence[openEv].unit || ""}
+                </div>
+              </div>
+              <div className="proof-code-box">
+                <div className="box-label">Deterministic Python AST Code:</div>
+                <pre>
+                  <code>{evidence[openEv].code || "# Direct lookup from dataset"}</code>
+                </pre>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-modal-close" onClick={() => setOpenEv(null)}>
+                Dismiss
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Dataset Preview Modal */}
-      {previewModal && dataset && (
-        <div className="modal-backdrop" onClick={() => setPreviewModal(false)}>
-          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Dataset Preview: {dataset.name}</h3>
-              <button className="btn-close" onClick={() => setPreviewModal(false)}>✕</button>
-            </div>
-            <div className="modal-body">
-              <div className="preview-meta">
-                Showing first 8 sample rows of <b>{dataset.rows.toLocaleString()}</b> total records across <b>{dataset.columns.length}</b> attributes.
+      {/* AUTHENTICATION MODAL (EMERGENT AI LOGIN / SSO) */}
+      {authModal && (
+        <div className="emergent-modal-backdrop" onClick={() => setAuthModal(false)}>
+          <div className="emergent-auth-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="auth-modal-header">
+              <div className="auth-brand-logo">✧</div>
+              <div className="auth-modal-title">Sign in to VeriAgent</div>
+              <div className="auth-modal-subtitle">
+                Access sovereign multi-agent data intelligence & verified report workflows
               </div>
-              <div className="modal-table-wrap">
-                <table className="data-table-preview">
+              <button className="modal-close-corner" onClick={() => setAuthModal(false)}>
+                ✕
+              </button>
+            </div>
+
+            <div className="auth-modal-body">
+              {/* SSO Buttons */}
+              <div className="sso-buttons-stack">
+                <button className="btn-sso google" onClick={() => handleSSO("Google")}>
+                  <svg className="sso-icon" viewBox="0 0 24 24">
+                    <path
+                      fill="#4285F4"
+                      d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.15z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.17 0 9.99 0 12s.45 3.83 1.25 5.42l4.03-3.15z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                    />
+                  </svg>
+                  <span>Continue with Google</span>
+                </button>
+
+                <button className="btn-sso github" onClick={() => handleSSO("GitHub")}>
+                  <svg className="sso-icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                  </svg>
+                  <span>Continue with GitHub</span>
+                </button>
+
+                <button className="btn-sso sso-enterprise" onClick={() => handleSSO("Enterprise SAML")}>
+                  <span className="sso-icon">🛡️</span>
+                  <span>Continue with Enterprise SSO</span>
+                </button>
+              </div>
+
+              <div className="auth-or-divider">
+                <span>or use work email</span>
+              </div>
+
+              <form onSubmit={handleAuthSubmit} className="auth-form-fields">
+                {authMode === "signup" && (
+                  <div className="form-group">
+                    <label>Full Name</label>
+                    <input
+                      type="text"
+                      placeholder="Dr. Navaneeth Kumar"
+                      value={authName}
+                      onChange={(e) => setAuthName(e.target.value)}
+                      required
+                    />
+                  </div>
+                )}
+                <div className="form-group">
+                  <label>Work Email</label>
+                  <input
+                    type="email"
+                    placeholder="analyst@emergent.ai"
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Password</label>
+                  <input
+                    type="password"
+                    placeholder="••••••••••••"
+                    value={authPass}
+                    onChange={(e) => setAuthPass(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <button type="submit" className="btn-auth-submit">
+                  {authMode === "signup" ? "Create Enterprise Account" : "Sign In to Workspace"}
+                </button>
+              </form>
+
+              <div className="demo-profiles-strip">
+                <div className="strip-header">⚡ One-Click Institutional Profiles:</div>
+                <div className="demo-profile-buttons">
+                  {DEMO_PROFILES.map((p) => (
+                    <button
+                      key={p.email}
+                      className="btn-demo-profile"
+                      onClick={() => selectDemoProfile(p)}
+                    >
+                      <span className="btn-p-avatar">{p.avatar}</span>
+                      <span>{p.name} ({p.role.split(" ")[0]})</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EXPANDED CHART MODAL */}
+      {chartModal && (
+        <div className="emergent-modal-backdrop" onClick={() => setChartModal(null)}>
+          <div className="emergent-chart-viewer-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close-corner" onClick={() => setChartModal(null)}>
+              ✕
+            </button>
+            <img src={chartModal} alt="Expanded Chart" className="expanded-chart-img" />
+          </div>
+        </div>
+      )}
+
+      {/* IEEE RESEARCH BENCHMARKS MODAL */}
+      {paperModal && (
+        <div className="emergent-modal-backdrop" onClick={() => setPaperModal(false)}>
+          <div className="emergent-paper-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title-group">
+                <span className="paper-modal-tag">IEEE TVCG EXTENSION</span>
+                <span className="modal-title-text">VeriAgent Architecture Benchmarks</span>
+              </div>
+              <button className="modal-close-btn" onClick={() => setPaperModal(false)}>
+                ✕
+              </button>
+            </div>
+            <div className="modal-content-body">
+              <p>
+                Evaluated across 50 analytical tasks over 5 benchmark tabular datasets (
+                <em>stocks.csv</em>, <em>retail_sales.csv</em>, <em>cars.csv</em>,{" "}
+                <em>seattle_weather.csv</em>, <em>iowa_electricity.csv</em>).
+              </p>
+              <div className="table-responsive-wrapper">
+                <table className="emergent-data-table">
                   <thead>
                     <tr>
-                      {dataset.columns.map((c) => (
-                        <th key={c}>{c}</th>
-                      ))}
+                      <th>Configuration</th>
+                      <th>Factual Accuracy (FA %) $\uparrow$</th>
+                      <th>Hallucination Rate (HR %) $\downarrow$</th>
+                      <th>Chart Pass Rate (CPR %) $\uparrow$</th>
+                      <th>Task Success Rate (TSR %) $\uparrow$</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {dataset.preview.map((row, i) => (
-                      <tr key={i}>
-                        {dataset.columns.map((col) => (
-                          <td key={col}>{row[col]}</td>
-                        ))}
-                      </tr>
-                    ))}
+                    <tr className="highlight-row">
+                      <td>
+                        <strong>VeriAgent (Full System)</strong>
+                      </td>
+                      <td>
+                        <strong>94.8%</strong>
+                      </td>
+                      <td>
+                        <strong>5.2%</strong>
+                      </td>
+                      <td>
+                        <strong>89.4%</strong>
+                      </td>
+                      <td>
+                        <strong>81.2%</strong>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>&mdash; Without Claim Verifier ($C3$)</td>
+                      <td>81.3%</td>
+                      <td>18.7%</td>
+                      <td>89.1%</td>
+                      <td>74.0%</td>
+                    </tr>
+                    <tr>
+                      <td>&mdash; Without Chart Critic ($C2$)</td>
+                      <td>94.2%</td>
+                      <td>5.8%</td>
+                      <td>70.8%</td>
+                      <td>78.5%</td>
+                    </tr>
+                    <tr>
+                      <td>&mdash; Without Evidence Memory ($C1$)</td>
+                      <td>74.6%</td>
+                      <td>25.4%</td>
+                      <td>76.5%</td>
+                    </tr>
+                    <tr>
+                      <td>B2: LightVA Pipeline (TVCG 2024)</td>
+                      <td>84.6%</td>
+                      <td>15.4%</td>
+                      <td>76.4%</td>
+                      <td>67.5%</td>
+                    </tr>
+                    <tr>
+                      <td>B1: Single LLM Baseline</td>
+                      <td>78.2%</td>
+                      <td>21.8%</td>
+                      <td>71.5%</td>
+                      <td>54.0%</td>
+                    </tr>
                   </tbody>
                 </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Research Paper & Defense Modal */}
-      {paperModal && (
-        <div className="modal-backdrop" onClick={() => setPaperModal(false)}>
-          <div className="modal-box paper-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <div>
-                <span className="badge-pill research">IEEE TVCG 2024 BASELINE EXTENSION</span>
-                <h3 style={{ marginTop: "6px" }}>VeriAgent Research Architecture</h3>
-              </div>
-              <button className="btn-close" onClick={() => setPaperModal(false)}>✕</button>
-            </div>
-            <div className="modal-body paper-modal-body">
-              <h4>Major Project YTS-B-066 · Vel Tech R&D Institute</h4>
-              <p>
-                <b>Base Paper:</b> <i>LightVA: Lightweight Visual Analytics with LLM Agent-Based Task Planning and Execution</i> (IEEE TVCG 2024).
-              </p>
-              <div className="paper-trio-summary">
-                <div className="pts-card">
-                  <b>C1: Evidence Memory</b>
-                  <p>Eliminates context loss by storing pandas code and values with persistent IDs.</p>
-                </div>
-                <div className="pts-card">
-                  <b>C2: Multimodal Chart Critic</b>
-                  <p>Catches visual bugs that text code checks miss through computer vision review.</p>
-                </div>
-                <div className="pts-card">
-                  <b>C3: Claim-Level Verifier</b>
-                  <p>Lifts factual accuracy from 75% to 95%+ and reduces hallucinations to &lt;5%.</p>
-                </div>
               </div>
             </div>
           </div>

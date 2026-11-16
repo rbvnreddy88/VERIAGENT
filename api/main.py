@@ -15,6 +15,7 @@ Endpoints
 from __future__ import annotations
 
 import asyncio
+import json
 import shutil
 import sys
 import threading
@@ -132,10 +133,67 @@ def start_run(req: RunRequest):
     return {"run_id": rid}
 
 
+@app.get("/api/runs")
+def list_runs():
+    """List recent runs for workspace history."""
+    out = []
+    seen = set()
+    # In-memory runs
+    for rid, r in RUNS.items():
+        seen.add(rid)
+        summ = r.get("result", {}).get("verification_summary") if r.get("result") else None
+        out.append({
+            "run_id": rid,
+            "goal": r.get("goal", "Analysis Run"),
+            "mode": r.get("mode", "full"),
+            "status": r.get("status", "done"),
+            "started": r.get("started", 0),
+            "summary": summ,
+        })
+    # Saved runs from disk
+    if RUNS_DIR.exists():
+        for p in sorted(RUNS_DIR.glob("*"), key=lambda x: x.stat().st_mtime, reverse=True):
+            if p.is_dir() and p.name not in seen:
+                run_json = p / "run.json"
+                if run_json.exists():
+                    try:
+                        data = json.loads(run_json.read_text(encoding="utf-8"))
+                        out.append({
+                            "run_id": p.name,
+                            "goal": data.get("goal", p.name),
+                            "mode": data.get("mode", "full"),
+                            "status": "done",
+                            "started": p.stat().st_mtime,
+                            "summary": data.get("verification_summary"),
+                        })
+                        seen.add(p.name)
+                    except Exception:
+                        pass
+    return out[:25]
+
+
 @app.get("/api/runs/{rid}")
 def get_run(rid: str, since: int = 0):
     rec = RUNS.get(rid)
     if not rec:
+        # Fallback to disk
+        p = RUNS_DIR / rid
+        if p.exists() and (p / "run.json").exists():
+            try:
+                data = json.loads((p / "run.json").read_text(encoding="utf-8"))
+                rep = (p / "report.md").read_text(encoding="utf-8") if (p / "report.md").exists() else ""
+                log = json.loads((p / "verification.json").read_text(encoding="utf-8")) if (p / "verification.json").exists() else []
+                return {
+                    "run_id": rid,
+                    "status": "done",
+                    "goal": data.get("goal", ""),
+                    "mode": data.get("mode", "full"),
+                    "result": {**data, "report": rep, "verification_log": log},
+                    "events": [],
+                    "n_events": 0,
+                }
+            except Exception as e:
+                raise HTTPException(500, f"Error reading run: {e}") from e
         raise HTTPException(404, "Unknown run")
     return {**{k: v for k, v in rec.items() if k not in ("events", "dir")}, "events": rec["events"][since:],
             "n_events": len(rec["events"])}
@@ -168,13 +226,14 @@ async def run_ws(ws: WebSocket, rid: str):
 
 
 @app.get("/api/runs/{rid}/files/{path:path}")
-def run_file(rid: str, path: str):
+def run_file(rid: str, path: str, download: bool = False):
     rec = RUNS.get(rid)
     base = (Path(rec["dir"]) if rec else RUNS_DIR / rid).resolve()
     target = (base / path).resolve()
     if base not in target.parents or not target.is_file():
         raise HTTPException(404, "File not found")
-    return FileResponse(target)
+    fname = target.name if download else None
+    return FileResponse(target, filename=fname)
 
 
 DIST = ROOT / "frontend" / "dist"
