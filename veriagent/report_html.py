@@ -29,7 +29,8 @@ def md_to_html(md: str) -> str:
             if not in_list:
                 out.append("<ul>")
                 in_list = True
-            out.append(f"<li>{_inline(re.sub(r'^([-*+]|\d+\.)\s+', '', s))}</li>")
+            content = _inline(re.sub(r"^([-*+]|\d+\.)\s+", "", s))
+            out.append(f"<li>{content}</li>")
         else:
             if in_list:
                 out.append("</ul>")
