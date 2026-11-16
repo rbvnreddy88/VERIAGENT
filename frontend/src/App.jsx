@@ -23,29 +23,29 @@ const MODE_LABELS = {
 
 const DATASET_SUGGESTIONS = {
   "retail_sales.csv": [
-    "Why did profit fall in 2023, and which region and category were most affected?",
-    "How do discount rates impact profit margins across Furniture, Technology, and Office Supplies?",
-    "Which region generated the highest sales versus highest profit, and what explains the difference?",
-    "Compare total sales, profit, and order volume across all product categories from 2021 to 2023."
+    "Perform a combined quantitative and qualitative analysis: why did profit fall in 2023, what were the regional margin drivers, and what strategic operational factors explain the decline?",
+    "How do discount rates impact profit margins across Furniture, Technology, and Office Supplies, and what qualitative pricing power dynamics are observed?",
+    "Which region generated the highest sales versus highest profit, and what explains the structural operational difference?",
+    "Compare total sales, profit, and order volume across all product categories from 2021 to 2023 with strategic retail recommendations."
   ],
   "stocks.csv": [
-    "Perform a multi-criteria risk vs. return trade-off analysis: identify the lowest volatility asset, the highest return asset, and the optimal Sharpe ratio asset with verifiable mathematical evidence.",
-    "Compute cumulative return %, annualized volatility %, Sharpe ratio, and maximum drawdown for each stock, and provide actionable recommendations based on risk tolerance profiles.",
-    "Identify the largest single-day percentage drop and peak-to-trough drawdowns for each stock, and evaluate trading volume anomalies.",
-    "Which stock had the highest overall return, and how did each symbol perform over time across the entire evaluation horizon?"
+    "Perform a comprehensive quantitative and qualitative investment analysis of all stocks: evaluate returns, volatility, Sharpe ratio, and drawdowns, while analyzing business models, economic moats, and strategic risk factors.",
+    "Conduct a multi-criteria risk vs. return trade-off analysis: identify the lowest volatility asset, highest return asset, and optimal Sharpe ratio asset with verifiable math and qualitative business context.",
+    "Analyze the largest drawdowns and volatility spikes across all stocks, providing qualitative macroeconomic and market regime context behind the drops.",
+    "Compare all symbols across risk-adjusted metrics, competitive positioning, and actionable recommendations for conservative, moderate, and aggressive investor profiles."
   ],
   "cars.csv": [
     "How does engine horsepower relate to miles per gallon (MPG), and which origin country is most fuel efficient?",
-    "Compare vehicle weight and acceleration trends across American, European, and Japanese cars.",
-    "Which year produced the highest average fuel economy, and what drove the increase?"
+    "Compare vehicle weight and acceleration trends across American, European, and Japanese cars with qualitative engineering insights.",
+    "Which year produced the highest average fuel economy, and what regulatory or technological factors drove the increase?"
   ],
   "seattle_weather.csv": [
-    "What are the seasonal precipitation and temperature patterns in Seattle from 2012 to 2015?",
+    "What are the seasonal precipitation and temperature patterns in Seattle from 2012 to 2015 with qualitative climate analysis?",
     "Which month consistently experiences the highest maximum temperatures and lowest rain?",
     "Compare the frequency of sunny, rainy, and snowy days across all recorded years."
   ],
   "iowa_electricity.csv": [
-    "How has Iowa's net electricity generation shifted from fossil fuels to renewables from 2001 to 2017?",
+    "How has Iowa's net electricity generation shifted from fossil fuels to renewables from 2001 to 2017 with qualitative energy transition analysis?",
     "Which renewable energy source experienced the fastest compound annual growth rate?",
     "Compare annual wind energy generation against total statewide electricity consumption."
   ]
@@ -307,7 +307,7 @@ export default function App() {
               VeriAgent
               <span className="badge-pill research">IEEE TVCG ARCHITECTURE · MAJOR PROJECT</span>
             </div>
-            <div className="brand-subtitle">Autonomous Verifiable Multi-Agent Intelligence System</div>
+            <div className="brand-subtitle">Autonomous Multi-Agent Intelligence · Hybrid Quantitative & Qualitative Fact Grounding</div>
           </div>
         </div>
 
