@@ -18,8 +18,8 @@ PROVIDERS = {
     "gemini": {
         "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
         "key_env": "GEMINI_API_KEY",
-        "text": "gemini-2.5-flash",
-        "vision": "gemini-2.5-flash",
+        "text": "gemini-3.1-flash-lite",
+        "vision": "gemini-3.1-flash-lite",
     },
     "groq": {
         "base_url": "https://api.groq.com/openai/v1",

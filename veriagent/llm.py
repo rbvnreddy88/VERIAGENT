@@ -146,15 +146,17 @@ class LLM:
             except Exception as e:  # rate limits and transient errors
                 last_err = e
                 msg = str(e).lower()
-                if json_mode and "response_format" in msg:
+                body = getattr(getattr(e, "response", None), "text", "")
+                err_detail = f"{e} - {body}" if body else str(e)
+                if json_mode and ("response_format" in msg or "400" in msg or "invalid" in msg or "json" in msg):
                     json_mode = False
                     continue
                 if any(k in msg for k in ("429", "rate", "quota", "timeout", "503", "502", "overloaded")):
                     time.sleep(delay)
                     delay = min(delay * 2, 60)
                     continue
-                raise LLMError(f"{role}: LLM call failed: {e}") from e
-        raise LLMError(f"{role}: LLM call failed after retries: {last_err}")
+                raise LLMError(f"{role}: LLM call failed: {err_detail}") from e
+        raise LLMError(f"{role}: LLM call failed after retries: {err_detail if 'err_detail' in locals() else last_err}")
 
     # ------------------------------------------------------------------
     def _cache_key(self, model, messages, json_mode) -> str:
