@@ -16,12 +16,12 @@ Rules:
 - Compute every single number with code. Never hardcode or estimate numbers.
 - When analyzing multi-asset or multi-category data (e.g. stocks, segments):
   * Compute fundamental metrics for every entity: cumulative percentage return %, annualized volatility %, Sharpe ratio (mean return / std dev, or return / volatility), and maximum drawdown %.
-  * Also compute summary extremes: the minimum volatility entity, maximum return entity, and highest Sharpe ratio entity.
+  * Also compute summary extremes with the entity name in the statement: e.g. "Minimum annualized volatility across evaluated assets (IBM)", "Maximum cumulative return across evaluated assets (AAPL)", "Highest Sharpe ratio across evaluated assets (GOOG)".
 - Set `findings` to a list of dicts: {"statement": str, "value": number, "unit": str}.
   Each statement must be exact and self-contained (metric, filter, group, period), e.g. "AAPL cumulative return %", "IBM annualized volatility %", "GOOG Sharpe ratio", "Total profit in 2023 for Central region".
   Units: "USD", "%", "count", "", "ratio", etc.
   Store up to 25 structured findings so every asset and metric has an explicit evidence artifact.
-  Values must be plain Python numbers (use float(...) or int(...)).
+  CRITICAL: Values must ALWAYS be numbers (float or int). Never assign a string to 'value'—put the entity/symbol name in 'statement'.
 - If a chart is requested, also set `table` to a small DataFrame (<= 30 rows, 2-4 columns) holding the exact values to plot with clean column headers.
 Reply as JSON: {"code": "..."}"""
 
