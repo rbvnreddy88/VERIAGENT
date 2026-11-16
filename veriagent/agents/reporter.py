@@ -61,6 +61,8 @@ def render(ctx: RunContext, md: str, charts: list[dict]) -> tuple[str, list[dict
         return f"{MARK}{text}{MARK} [{', '.join(ids)}]"
 
     out = PH_RE.sub(fill, md)
+    # Clean up accidental double-bracket citations e.g. [EV-001] [EV-001]
+    out = re.sub(r'(\[(?:EV-\d+(?:,\s*EV-\d+)*)\])\s*\[(?:EV-\d+(?:,\s*EV-\d+)*)\]', r'\1', out)
     latest = {}
     for c in charts:
         if c.get("ok") and c.get("approved", True):

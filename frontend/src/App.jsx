@@ -29,9 +29,10 @@ const DATASET_SUGGESTIONS = {
     "Compare total sales, profit, and order volume across all product categories from 2021 to 2023."
   ],
   "stocks.csv": [
-    "Which stock had the highest overall return, and how did each symbol perform over time?",
-    "Which stock was the most volatile based on price spread, and what were the largest price swings?",
-    "Compare all symbols by average daily closing price and overall percentage gain or loss."
+    "Perform a multi-criteria risk vs. return trade-off analysis: identify the lowest volatility asset, the highest return asset, and the optimal Sharpe ratio asset with verifiable mathematical evidence.",
+    "Compute cumulative return %, annualized volatility %, Sharpe ratio, and maximum drawdown for each stock, and provide actionable recommendations based on risk tolerance profiles.",
+    "Identify the largest single-day percentage drop and peak-to-trough drawdowns for each stock, and evaluate trading volume anomalies.",
+    "Which stock had the highest overall return, and how did each symbol perform over time across the entire evaluation horizon?"
   ],
   "cars.csv": [
     "How does engine horsepower relate to miles per gallon (MPG), and which origin country is most fuel efficient?",
@@ -89,7 +90,18 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [evSearch, setEvSearch] = useState("");
   const [auditFilter, setAuditFilter] = useState("all");
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const fileRef = useRef(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      const x = ((e.clientX / window.innerWidth) - 0.5) * 2;
+      const y = ((e.clientY / window.innerHeight) - 0.5) * 2;
+      setTilt({ x: Number(x.toFixed(3)), y: Number(y.toFixed(3)) });
+    };
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   useEffect(() => {
     api("/api/config")
@@ -270,7 +282,20 @@ export default function App() {
   }, [res, auditFilter]);
 
   return (
-    <div className="app-shell">
+    <div
+      className="app-shell"
+      style={{
+        "--parallax-x": tilt.x,
+        "--parallax-y": tilt.y,
+      }}
+    >
+      {/* Dynamic Parallax Ambient Depth Orbs */}
+      <div className="parallax-ambient-layer" aria-hidden="true">
+        <div className="parallax-orb orb-1" />
+        <div className="parallax-orb orb-2" />
+        <div className="parallax-orb orb-3" />
+      </div>
+
       {/* Top Glassmorphic Navigation */}
       <header className="navbar">
         <div className="nav-left">
@@ -509,6 +534,31 @@ export default function App() {
                       {run.status.toUpperCase()}
                     </b>
                   </div>
+                </div>
+
+                {/* Neural Pipeline Flow Connector */}
+                <div className="swarm-flow-connector">
+                  {agents.map((a, idx) => {
+                    const s = agentState[a.key]?.status || "idle";
+                    const isNextRunning =
+                      idx < agents.length - 1 &&
+                      (agentState[agents[idx + 1].key]?.status === "running" || s === "done");
+                    return (
+                      <React.Fragment key={a.key}>
+                        <div className={`flow-node-badge ${s}`}>
+                          <span className="flow-badge-icon">{a.icon}</span>
+                          <span className="flow-badge-name">{a.label}</span>
+                          {s === "running" && <span className="flow-badge-pulse" />}
+                          {s === "done" && <span className="flow-badge-check">✓</span>}
+                        </div>
+                        {idx < agents.length - 1 && (
+                          <div className={`flow-connector-track ${isNextRunning ? "active" : ""}`}>
+                            <div className="flow-track-light" />
+                          </div>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
                 </div>
 
                 <div className="agent-pipeline-grid">
